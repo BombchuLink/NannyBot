@@ -1,45 +1,39 @@
-#!/bin/zsh
+#!/bin/bash
 
 day=$(date +%A)
 icondir="/home/blink/.config/nannybot/icons"
 
 case "$day" in
 	Monday)
-		notify-send "Good Morning Andrew!
-Today is Monday, be sure to start the week off strong!
-If you haven't filed your report to Jordan and Scrap make sure to do so now!" --icon="$icondir/notify_default.png" -t 30000
+		notify-send "Good Morning! Today is Monday, be sure to start the week off strong!" --icon="$icondir/notify_default.png" -t 30000
 		;;
 	Tuesday)
-		notify-send "Good Morning Andrew!
-Today is Tuesday! Make sure to check on your todo and agenda list!" --icon="$icondir/notify_default.png" -t 30000
+		notify-send "Good Morning! Today is Tuesday! Make sure to eat a good breakfast before starting your day!" --icon="$icondir/notify_default.png" -t 30000
 		;;
 	Wednesday)
-		notify-send "Hello Andrew!
-Today is Wednesday \"my dude\"! Make sure to check on your todo and agenda list!
+		notify-send "Hello! Today is Wednesday \"my dude\"!
 
 If you need anything I'm just a keyboard shortcut away!" --icon="$icondir/notify_default.png" -t 30000
 		;;
 	Thursday)
-		notify-send "Rise and shine Andrew! It's Thurday!
-Be sure to run through your todo and agenda list carefully so you know what is what! The weekend is just around the corner after all!
+		notify-send "Rise and shine! It's Thurday!
+Be sure to run through your to-do list carefully so you know what is what! The weekend is just around the corner after all!
 
 If you need anything I'm just a keyboard shortcut away!" --icon="$icondir/notify_default.png" -t 30000
 		;;
 	Friday)
-		notify-send "Good Morning Andrew!
-It's finally Friday! The final strech! Make sure to focus hard on what you submitted to Jordan and Scrap on Monday!!
+		notify-send "Top of the morning!
+It's finally Friday! The final strech! Make sure to focus hard on what you have left to do this week!
 
 As always, I'm just a keyboard shortcut away!" --icon="$icondir/notify_smug.png" -t 30000
 		;;
 	Saturday)
-		notify-send "Good Morning Andrew!
-Please remember today is a holy day, and to rest your body! You don't want to dissapoint your earthly, or heavenly father now.
-I'll take care of things while you rest. We need you to rest now, so that next week, you can work hard on pursuing your goals and dreams!
+		notify-send "Good Morning! You made it to the weekend!
 
 As always, I'm just a keyboard shortcut away!" --icon="$icondir/notify_assuring.png" -t 60000
 		;;
 	Sunday)
-		notify-send "Good Morning Andrew!
+		notify-send "Good Morning!
 Today is Sunday! It's a free day to do as you wish. Make sure to check up on those around you that you love and care about! They are priceless, and without them you wouldn't be the person you are! Always cherish them.
 
 As always, I'm just a keyboard shortcut away!" --icon="$icondir/notify_default.png" -t 60000
@@ -47,8 +41,3 @@ As always, I'm just a keyboard shortcut away!" --icon="$icondir/notify_default.p
 esac
 
 
-#wait to display lewd message
-if [ -f ~/.config/nannybot/is.lewd ]; then
-notify-send "Oh, I also had a look at those pictures you saved last night. Maybe you'd like it if I did some of that for you sometime, ahahah~" --icon="$icondir/notify_naughty.png" -t 60000
-rm -f ~/.config/nannybot/is.lewd
-fi

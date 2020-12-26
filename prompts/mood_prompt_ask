@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 icondir="/home/blink/.config/nannybot/icons"
 
