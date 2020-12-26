@@ -1,0 +1,159 @@
+#!/bin/zsh
+
+#get dir
+NannyBotDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+NannyBotDir=$( echo $NannyBotDir | sed 's/scripts\///' )
+icondir=""$NannyBotDir"/icons"
+
+#parse config file
+
+
+while [[ -f "$NannyBotDir"/is.running ]]; do
+
+	#start bot, get vars
+	date=$(date +%D)
+	dxte="${date:0:6}XX"
+	day=$(date +%a)
+	hour=$(date +%H) # does 0-23
+	icondir=""$NannyBotDir"/icons"
+
+	#---====load file and parse===----
+	#remove comments
+	queuelist=$(grep -v "#" "$NannyBotDir"/messages/reminders)
+	#remove blank lines
+	queuelist=$( echo $queuelist | sed '/^[[:space:]]*$/d' )
+	#echo "---===queue list (before day sort)===---
+	#$day
+	#$date
+	#$dxte"
+	#keep 'all days', 'current day', and 'current date' values
+	queuelist=$(echo $queuelist | grep "$day\|All\|$date\|$dxte" )
+
+	#sort files by third column
+	queuelist=$( echo $queuelist | sort -t ' ' -k 3n )
+	#echo "---===queue list===---
+	#$queuelist"
+
+	linecount=$( echo $queuelist | wc -l )
+
+	if [ $linecount -eq 0 ]; then
+		echo "no set tasks for today!"
+	else
+		#loop goes here
+		for (( a=1; a<=linecount; a++ )); do
+			#get line
+
+			currentline=$( echo $queuelist | sed "${a}q;d" )
+			currentlinetime=$( echo $currentline | awk '{print $3}')
+
+			if [ "$currentlinetime" != "boot" ]; then
+				#remove :
+				currentlinetime=$( echo $currentlinetime | sed 's/://g')
+
+				#subtract from current time to get wait time
+				currTime=`date +%k%M`
+
+				if [ "$currTime" -le $currentlinetime ]; then
+
+					# TODO remove message if Temp instead of Perm
+
+					#take upper two digits, and multiply by 40
+					#subtract by full value
+					#see if single or double digits for hours
+					if [ ${#currTime} -eq 3 ]; then
+						currHour=$(echo "${currTime:0}" )
+					else
+						currHour=$(echo "${currTime:0:2}" )
+					fi
+					let currHour\*=40
+					let currTime-=currHour
+
+
+					if [ ${#currentlinetime} -eq 3 ]; then
+						waitHour=$( echo "${currentlinetime:0}" )
+					else
+						waitHour=$( echo "${currentlinetime:0:2}" )
+					fi
+					let waitHour\*=40
+					let currentlinetime-=waitHour
+
+
+					let waittime=currentlinetime\-currTime
+					echo "wait time for line $a is $waittime minutes"
+
+					#sleep loop goes here
+					#convert from seconds to min
+					let waittime=waittime\*60;
+					#sleeping loop
+					for (( c=$waittime; c>=0; c-- )); do
+						if [[ ! -f "$NannyBotDir"/is.running ]]; then
+							break;
+						fi
+						echo "sleeptime is $c"
+						sleep 1
+					done
+
+					if [[ ! -f "$NannyBotDir"/is.running ]]; then
+						break;
+					fi
+
+					#grep out everything in quotes
+					msg=$(echo $currentline | grep -Po '\"\K[^\"]*')
+
+					# check if msg is empty, and run prompt stuff instead if it is
+
+					if [ -z "$msg" ]; then
+
+						prompt=$( echo $currentline | awk '{print $6}' )
+						echo "prompt name is $prompt"
+						"$NannyBotDir"/prompts/"$prompt"_prompt_ask
+
+						#notify-send "Ummmm, for some reason I couldn't queue this message for you" --icon="$icondir/notify_dizzy.png" -t 30000
+
+					else
+						#get icon to display
+						icon=$( echo $currentline | awk '{print $4}' )
+
+
+						#get random pre-message
+						RANDOM=$(date +%s%N | cut -b10-19)
+						m=$(echo $(( $RANDOM % 2 )))
+
+						case "${m}" in
+							0)
+								pmsg=$(echo "Andrew, I need to remind you")
+								;;
+							1)
+								pmsg=$(echo "Andrew, Here's your reminder")
+								;;
+							2)
+								pmsg=$(echo "Hey Andrew, Don't forget")
+								;;
+							*)
+						esac
+						#and finally, send message
+						notify-send "$pmsg $msg" --icon="$icondir/notify_$icon.png" -t 30000
+					fi
+				else
+					echo "it is past $currentlinetime"
+				fi
+			else
+				echo "found a message that runs on boot!"
+			fi
+		done
+	fi
+	#make while loop here making it stuck until tomorrow
+	currentday=$( date +%a)
+	while [[ "$currentday" == "$day" ]]; do
+		if [[ ! -f "$NannyBotDir"/is.running ]]; then
+			break;
+		fi
+		currentday=$( date +%a)
+		echo "waiting until $day is over"
+		sleep 1
+	done
+	if [[ ! -f "$NannyBotDir"/is.running ]]; then
+		echo "is.running was killed! Exiting remindermanager!"
+		break;
+	fi
+done

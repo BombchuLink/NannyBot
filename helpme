@@ -1,0 +1,43 @@
+#!/bin/zsh
+
+icondir="/home/blink/.config/nannybot/icons"
+
+#check if prompt exists
+if [ -f ~/.config/nannybot/current_prompt ]; then
+	~/.config/nannybot/current_prompt
+else
+	option=$(echo -e "1 Who are you?\n2 So do I call you Betty or... \n3 How am I suppose to use you exactly?\n4 What is the recomended setup for you?\n5 What else should I know?\n6 Are you running right now?" | dmenu -p "Nannybot here, how can I help?" -i -l 30)
+
+	char="${option:0:1}"
+
+	case "${char}" in
+		1)
+		notify-send "Why I'm Nannybot! The name of this particular module you're running is called \"Betty\" Nice to meet you! " --icon="./icons/notify_default.png" -t 60000
+		;;
+		2)
+			notify-send "Either is perfectly fine, Betty is the face, nannybot is the underlying structure that makes me run. If you're wondering where my design comes from, I was drawn by wwwjam, and I'm based on a comic series called \"Emmy The Robot\", that's owned by the wonderful Domcell (That you should totally read by the way!)" --icon="$icondir/notify_default.png" -t 60000
+		;;
+		3)
+		notify-send "I'm a task managing system daemon, that helps you manager you daily life! I can remind you of certian tasks, or things you need to do on certian days. I can help you remember birthdays, remind you to work on that one project you keep putting off, or even just to take out the trash!" --icon="$icondir/notify_default.png" -t 60000
+		;;
+		4)
+		notify-send "Andrew, my creator, Recomends that you add me to your startup programs, and have a hotkey mapped to run the 'summon' script. It doesn't matter what hotkey, just as long as it's one that's convenient for you." --icon="$icondir/notify_default.png" -t 60000
+		;;
+		5)
+		notify-send "Checkout the README.md for information on how my messaging system works!" --icon="$icondir/notify_assuring.png" -t 60000
+		;;
+		6)
+			if [ -f /home/blink/.config/nannybot/is.running ]; then
+				notify-send "Yes I am! But I'd suggest you got make some custom messages for me to send to you, if you haven't already! Go check out the README.md to get more info on how to do that." --icon="$icondir/notify_smug.png" -t 60000
+			else
+				notify-send "No I am not running right now, You can't start me without having some custom messages for me to send to you! Go check out the README.md to get more info on making some!" --icon="$icondir/notify_smug.png" -t 60000
+			fi
+		;;
+		7)
+			notify-send "You can't start me without having some custom messages for me to send to you! Go check out the README.md to get more infor on that." --icon="$icondir/notify_smug.png" -t 60000
+			;;
+		*)
+		notify-send "I'm sorry sweetie, can you say that again?" --icon="$icondir/notify_thinking.png" -t 60000
+		;;
+	esac
+fi

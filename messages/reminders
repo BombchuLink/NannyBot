@@ -1,0 +1,33 @@
+#These are for nannybot to remind you of things at certian times;
+#format: Type Day/Date Time icon string
+#Type: Temp (Temporary) Perm (Permanent) Nannybot will delete the message if it's set to Temp
+#Day: Mon-Fri or All are acceptable days. using the date 2/25/21 is also acceptable (use XX in-place of the year for annual reminders)
+#Time: Insert time, can put "boot" and nannybot will remind you 2 minutes after next boot on previously said day.
+#icon: check nannybot/icons for list of all images
+#string: all messages are proceeded by the following unless the first character is $ in the string
+#"%Name, I need to remind you"
+#"%Name, Here's your reminder"
+#Hey %Name, Don't forget"
+
+Temp Mon 4:00 default "that this is just a Monday Test Message!"
+Temp Tue 17:00 default "that the party at Daniel's is Thursay Night, at 7:00PM!"
+Temp Wed 17:00 default "that Owen needs picked up from the airport monday afternoon at 1PM!"
+Temp Thu 12:00 default "that this is just a Thursday Test Message"
+Temp Fri 23:22 smug "that this is a test message for Friday night at 8:08PM!"
+Temp Sat 12:00 default "that this is just a Saturday Test Message"
+Temp Sun 12:00 default "that this is just a Sunday Test Message"
+
+
+#--permanent messages
+Perm All 17:00 assuring "Be sure to make some dinner. It's 5PM dear, and you need to keep your strength up"
+
+Perm Tue 13:00 smug "to put more of the tires into the trash today! Your father wants them all gone eventually, and I'm sure you feel the same"
+
+Perm Thu 11:00 default "that today is your weekly meeting with Jaden at 5PM. Make the most of it!"
+
+
+Perm 7/23/XX boot assuring "Hey big boy, I heard today is your birthday!"
+Perm 12/25/20 boot assuring "Date Test message!"
+Perm 12/25/XX 15:00 assuring "Annual Test message!"
+Perm 12/25/XX 20:36 assuring *P mood
+

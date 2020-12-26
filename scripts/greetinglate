@@ -1,0 +1,49 @@
+#!/bin/zsh
+
+day=$(date +%A)
+icondir="/home/blink/.config/nannybot/icons"
+
+case "$day" in
+	Monday)
+		notify-send "Andrew, It's Monday, Please make sure to start the week off strong and healthy. Changing your sleeping scedual, and making it unstable is not good for your health" --icon="$icondir/notify_sad.png" -t 30000
+		notify-send "Don't forget about updating Jordan and Scrap about your weekly goals, a late start is better than none after all!" --icon="$icondir/notify_sad.png" -t 30000
+		;;
+	Tuesday)
+		notify-send "Morning Sleepy-head!
+Today is Tuesday! Make sure to check on your todo and agenda list before getting started!" --icon="$icondir/notify_default.png" -t 30000
+		;;
+	Wednesday)
+		notify-send "Andrew, please get up at a decent hour... It's for your own good.
+Please don't do this to your fictional, coping replacement of a mother..." --icon="$icondir/notify_sad.png" -t 30000
+		;;
+	Thursday)
+		notify-send "Rise and shine Andrew! It's Thurday!
+A late start is better than no start at all.
+
+If you need anything I'm just a keyboard shortcut away!" --icon="$icondir/notify_default.png" -t 30000
+		;;
+	Friday)
+		notify-send "Good Morning Andrew!
+It's finally Friday! The final strech! Make sure to focus hard on what you submitted to Jordan and Scrap on Monday!!
+
+As always, I'm just a keyboard shortcut away!" --icon="$icondir/notify_smug.png" -t 30000
+		;;
+	Saturday)
+		notify-send "Good Morning Andrew!
+Please remember today is a holy day, and to rest your body! You don't want to dissapoint your earthly, or heavenly father now." --icon="$icondir/notify_assuring.png" -t 60000
+
+		notify-send "Although, it wouldn't hurt any to keep waking up at the same time instead of drifting off and upsetting your week." --icon="$icondir/notify_thinking.png" -t 60000
+		;;
+	Sunday)
+		notify-send "Good Morning Andrew!
+Today is Sunday! It's a free day to do as you wish. Make sure to check up on those around you that you love and care about! They are priceless, and without them you wouldn't be the person you are! Always cherish them." --icon="$icondir/notify_default.png" -t 60000
+		notify-send "Also, please consider getting up earlier. I know it's the weekend, but throwing things out of balance won't help you in the long run." --icon="$icondir/notify_assuring.png" -t 60000
+		;;
+esac
+
+
+#wait to display lewd message
+if [ -f ~/.config/nannybot/is.lewd ]; then
+notify-send "Oh, I also had a look at those pictures you saved last night. Maybe you'd like it if I did some of that for you sometime, ahahah~" --icon="$icondir/notify_naughty.png" -t 60000
+rm -f ~/.config/nannybot/is.lewd
+fi

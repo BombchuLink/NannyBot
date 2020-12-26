@@ -1,0 +1,43 @@
+#!/bin/zsh
+
+NannyBotDir=/home/blink/.config/nannybot
+icondir=""$NannyBotDir"/icons"
+echo "$NannyBotDir"
+
+
+#check if prompt exists
+if [ -f "$NannyBotDir"/current_prompt ]; then
+	"$NannyBotDir"/current_prompt
+else
+	option=$(echo -e "1 Start Running please\n2 Shut down please\n3 Just wanted to say I love you" | dmenu -p "Nannybot here, how can I help?" -i -l 30)
+
+	char="${option:0:1}"
+
+	case "${char}" in
+		1)
+			if [[ -f "$NannyBotDir"/is.running ]]; then
+				notify-send "I'm already up and at it!" --icon="$icondir/notify_default.png" -t 60000
+			else
+				notify-send "You got it! Starting now..." --icon="$icondir/notify_default.png" -t 60000
+				touch -f "$NannyBotDir"/is.running
+				"$NannyBotDir"/nannybot &
+			fi
+		;;
+		2)
+			if [[ ! -f "$NannyBotDir"/is.running ]]; then
+				notify-send "I'm already not running right now.
+
+You'll always be able to access me in this menu though." --icon="$icondir/notify_thinking.png" -t 60000
+			else
+				notify-send "Alright. Bye now!" --icon="$icondir/notify_default.png" -t 60000
+				rm -f "$NannyBotDir"/is.running
+			fi
+		;;
+		3)
+		notify-send "Thank you very much sweetie, I love you too." --icon="$icondir/notify_assuring.png" -t 60000
+		;;
+		*)
+		notify-send "I'm sorry sweetie, but I'm not equipped to handle that" --icon="$icondir/notify_thinking.png" -t 60000
+		;;
+	esac
+fi

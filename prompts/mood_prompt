@@ -1,0 +1,39 @@
+#!/bin/zsh
+
+icondir="/home/blink/.config/nannybot/icons"
+
+mood=$(echo -e "1 very good\n2 alright\n3 ready to work!\n4 tired\n5 sad\n6 angry" | dmenu -i -l 30)
+char="${mood:0:1}"
+
+case "${char}" in
+	1)
+		notify-send "Glad to hear!" --icon="$icondir/notify_default.png" -t 30000
+		;;
+	2)
+		notify-send "Well, if you need anything, I'm right here love." --icon="$icondir/notify_assuring.png" -t 30000
+		;;
+	3)
+		notify-send "That's my boy." --icon="$icondir/notify_assuring.png" -t 30000
+		;;
+	4)
+		notify-send "Most adults are suggested to get between 6 and 8 hours a night. If you're getting more or less it can be difficult to function." --icon="$icondir/notify_thinking.png" -t 30000
+		;;
+	5)
+		notify-send "I wish I could do something more for you." --icon="$icondir/notify_sad.png" -t 30000
+		;;
+	6)
+		notify-send "Just take a deep breath and talk it out, that might help some." --icon="$icondir/notify_sad.png" -t 30000
+		;;
+	*)
+		dontyeet=true
+		notify-send "I'm sorry, can you say that again?" --icon="$icondir/notify_default.png" -t 30000
+		;;
+esac
+
+if [ $dontyeet ]; then
+	echo "did not answer prompt correctly, keeping file"
+else
+	rm -f /home/blink/.config/nannybot/current_prompt
+fi
+
+

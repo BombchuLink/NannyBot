@@ -1,0 +1,10 @@
+#!/bin/zsh
+
+icondir="/home/blink/.config/nannybot/icons"
+
+#copy prompt to home dir
+cp -f /home/blink/.config/nannybot/prompts/mood_prompt /home/blink/.config/nannybot/current_prompt
+
+notify-send "Hey there, How are you doing right now?
+
+(Answer with Mod+Alt+N)" --icon="$icondir/notify_default.png" -t 30000
