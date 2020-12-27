@@ -1,6 +1,7 @@
 #!/bin/bash
 
-icondir="/home/blink/.config/nannybot/icons"
+NannyBotDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+icondir=""$NannyBotDir"/icons"
 
 mood=$(echo -e "1 very good\n2 alright\n3 ready to work!\n4 tired\n5 sad\n6 angry" | dmenu -i -l 30)
 char="${mood:0:1}"
@@ -33,7 +34,7 @@ esac
 if [ $dontyeet ]; then
 	echo "did not answer prompt correctly, keeping file"
 else
-	rm -f /home/blink/.config/nannybot/current_prompt
+	rm -f "$NannyBotDir"/current_prompt
 fi
 
 

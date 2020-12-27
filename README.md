@@ -1,6 +1,8 @@
+#NannyBot
+
 Nannybot is a task managing daemon made using shell scripts, that passes messages to the user via notify-send (with cute waifu faces).
 
-![alt text](https://cdn.discordapp.com/attachments/764200003073343489/792360493213941840/unknown.png)
+![bot](bot.png)
 
 The bot has only been tested using dunst, but should work with any notifcation daemon. For best results, it is suggested to have a notifcation system that allows icons to be displayed, and turned on.
 
@@ -8,15 +10,15 @@ The bot is a project that I spent only 3 days on, and has had minimal testing, s
 
 Also if you make your own modules, or characters, feel free to fork
 
-#INSTALLATION
+##INSTALLATION
 
 Just put the folder wherever you want (~/.config/nannybot is suggested) and run ./nannybot
 
-#USING NANNYBOT
+##USING NANNYBOT
 
 For a quick rundown on how Nannybot works, simply run ./helpme in the nannybot directory to have a prompt show up (dmenu required) that will walk you through some of the basics
 
-#MESSAGES
+##MESSAGES
 
 There are three kinds of notifcations; Notices, Reminders, and Prompts.
 
@@ -28,7 +30,7 @@ Prompts are a subset of Notices and Reminders that display a message, but also i
 
 For a more in-depth look at how flexable the messages are, please look at the files the messages are stored in, as they contain all the syntax to add your own messages.
 
-#CREDITS
+##CREDITS
 
 Andrew "BLink/Bombchu Link" Prater:
 Program
