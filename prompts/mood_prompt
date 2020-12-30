@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NannyBotDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+NannyBotDir="$HOME/.config/nannybot"
 icondir=""$NannyBotDir"/icons"
 
 mood=$(echo -e "1 very good\n2 alright\n3 ready to work!\n4 tired\n5 sad\n6 angry" | dmenu -i -l 30)

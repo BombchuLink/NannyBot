@@ -1,6 +1,6 @@
 #!/bin/bash
 
-icondir="/home/blink/.config/nannybot/icons"
+icondir="$HOME/.config/nannybot/icons"
 
 #copy prompt to home dir
 cp -f /home/blink/.config/nannybot/prompts/mood_prompt /home/blink/.config/nannybot/current_prompt

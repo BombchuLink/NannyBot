@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/bin/zsh
+# WARNING bash removes the newline character when you do var=$() so this script uses zsh
 
 #get dir
-NannyBotDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+NannyBotDir="$HOME/.config/nannybot"
 NannyBotDir=$( echo $NannyBotDir | sed 's/scripts\///' )
 icondir=""$NannyBotDir"/icons"
 
@@ -19,43 +20,44 @@ while [[ -f "$NannyBotDir"/is.running ]]; do
 
 	#---====load file and parse===----
 	#remove comments
-	queuelist=$(grep -v "#" "$NannyBotDir"/messages/reminders)
+	queuelist=$(grep -v "#" $NannyBotDir"/messages/reminders")
 	#remove blank lines
 	queuelist=$( echo $queuelist | sed '/^[[:space:]]*$/d' )
-	#echo "---===queue list (before day sort)===---
-	#$day
-	#$date
-	#$dxte"
+	echo "---===queue sort info===---
+	$day
+	$date
+	$dxte"
 	#keep 'all days', 'current day', and 'current date' values
 	queuelist=$(echo $queuelist | grep "$day\|All\|$date\|$dxte" )
-
 	#sort files by third column
 	queuelist=$( echo $queuelist | sort -t ' ' -k 3n )
 	#echo "---===queue list===---
-	#$queuelist"
+#$queuelist"
 
 	linecount=$( echo $queuelist | wc -l )
+	echo "we have $linecount task(s) today"
+	#increase by 1 because of index 1 things, and how line 0 is 1 so we need 2 for 1 task, ect
+	let linecount+=1
 
 	if [ $linecount -eq 0 ]; then
 		echo "no set tasks for today!"
 	else
 		#loop goes here
-		for (( a=1; a<=linecount; a++ )); do
-			#get line
+		for (( a=1; a<linecount; a++ )); do
 
+			#get line
 			currentline=$( echo $queuelist | sed "${a}q;d" )
 			currentlinetime=$( echo $currentline | awk '{print $3}')
 
 			if [ "$currentlinetime" != "boot" ]; then
 				#remove :
 				currentlinetime=$( echo $currentlinetime | sed 's/://g')
+				echo "currentlinetime is $currentlinetime"
 
 				#subtract from current time to get wait time
 				currTime=`date +%k%M`
 
-				if [ "$currTime" -le $currentlinetime ]; then
-
-					# TODO remove message if Temp instead of Perm
+				if [ $currTime -le $currentlinetime ]; then
 
 					#take upper two digits, and multiply by 40
 					#subtract by full value
@@ -131,8 +133,21 @@ while [[ -f "$NannyBotDir"/is.running ]]; do
 								;;
 							*)
 						esac
-						#and finally, send message
+						#send message
 						notify-send "$pmsg $msg" --icon="$icondir/notify_$icon.png" -t 30000
+						# TODO remove message if Temp
+
+						# get line of message that has Temp, Current day, and $msg
+						#get line of msg
+
+						TimeNow=`date +%k:%M`
+						awk "/$msg|$day|Temp/{print NR; exit }" $NannyBotDir"/messages/reminders"
+						LineToDel=$(awk "/^Temp $day $TimeNow.*$msg /{print NR }" $NannyBotDir"/messages/reminders" )
+						echo "Attempting to see if displayed message is a temp message"
+						if [ $LineToDel ]; then
+							sed '$LineToDeld' $NannyBotDir"/messages/reminders"
+							echo "Attempting to see if displayed message is a temp message"
+						fi
 					fi
 				else
 					echo "it is past $currentlinetime"

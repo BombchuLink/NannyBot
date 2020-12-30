@@ -2,7 +2,8 @@
 
 
 #get dir of this file
-NannyBotDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+CurrentDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+NannyBotDir="$HOME/.config/nannybot"
 icondir=""$NannyBotDir"/icons"
 touch -f "$NannyBotDir"/is.running
 
@@ -12,166 +13,176 @@ day=$(date +%A)
 hour=$(date +%H) # does 0-23
 
 # TODO add a config file for Name, what avatar to use, message pool timing
-#parse config file
+# parse config file
 
 
-# TODO check to see if this boot is a reboot, or if booting bot for first time in 5+ hours (sleep) and play appropriate greeting message, also make separate message for if PC was off for multiple days, or off during the day (3+ hours) for trip
+# KNOWN BUGS
+# NannyBot will display the entire mesage log sometimes
+# also will run into not being able to display random messages sometimes
 
-#boot message based on hour of day
 
+#force bot to be installed at ~/.config/nannybot. Running scripts from hotkeys doesn't preserve the directory the script is originally in, forcing my hand
+if [[ $CurrentDir != $NannyBotDir ]]; then
+	notify-send "Oops, it looks like I'm not installed to your home directory.
+Please install me to ~/.config/nannybot" --icon="$icondir/notify_default.png" -t 60000
 
-#run inital boot message if log file doesn't exist
-if [[ ! -f "$NannyBotDir"/botlog ]]; then
+else
+	#run inital boot message if log file doesn't exist
+	if [[ ! -f "$NannyBotDir"/botlog ]]; then
 
-	#write directory of bot to the summon script directly because when mapped to hotkey it's not possible for the script to know where it originally is when ran afaik
-	sed -i "3i\NannyBotDir=$NannyBotDir" $NannyBotDir/summon
-	touch -f "$NannyBotDir"/botlog
-
-	notify-send "Hi there! I'm NannyBot v0.1! I'm here to help you organize your life and help you through thick and thin
+		#write directory of bot to the summon script directly because when mapped to hotkey it's not possible for the script to know where it originally is when ran afaik
+		touch -f "$NannyBotDir"/botlog
+		notify-send "Hi there! I'm NannyBot v0.1! I'm here to help you organize your life and help you through thick and thin
 
 If you haven't done so already, run the 'helpme' script in this folder, and please check out the README.md for full documentation on how I can help you!" --icon="$icondir/notify_default.png" -t 60000
-else
-	if [ $hour -gt 12 ]; then
-		"$NannyBotDir"/scripts/greetinglate
+	elif [[ -f "$NannyBotDir"/is.reboot ]]; then
+		notify-send "Successfully rebooted!" --icon="$icondir/notify_default.png" -t 60000
+		rm -f "$NannyBotDir"/is.reboot
 	else
-		"$NannyBotDir"/scripts/greetingmsg
-	fi
-fi
-
-
-# TODO add check for other boot messages
-
-# TODO start script that monitors files/day/active time/ect (shutdown monitoring goes here)
-
-#start timed reminders script
-"$NannyBotDir"/scripts/remindermanager &
-
-#start notifcations loop
-while true; do
-
-	while [ -f ~"$NannyBotDir"/is.quiet ]; do
-		echo "bot is quiet for now"
-		sleep 1
-	done
-
-	#get random wait time till next random message (20-40 minutes)
-	#start with randomness based on current nanosecond
-	RANDOM=$(date +%s%N | cut -b10-19)
-	#modulate to number between 0 and 20
-	waittime=$(echo $(( $RANDOM % 20 )))
-	#add 20
-	let waittime=waittime\+20;
-	echo "sleeping for $waittime minutes"
-	#convert from seconds to min
-	let waittime=waittime\*60;
-	#waittime is now between 20 and 40 minutes
-
-	#sleeping loop
-	for (( c=$waittime; c>=0; c-- )); do
-	#for (( c=5; c>0; c-- )); do
-		#check if condition is filled to break loop
-		if [[ -f "$NannyBotDir"/is.running ]]; then
-			echo "sleeptime is $c"
-			sleep 1
+		#boot message based on hour of day
+		if [ $hour -gt 12 ]; then
+			"$NannyBotDir"/scripts/greetinglate
 		else
+			"$NannyBotDir"/scripts/greetingmsg
+		fi
+	fi
+
+
+	# TODO add check for other boot messages
+
+	# TODO start script that monitors files/day/active time/ect (shutdown monitoring goes here)
+
+	#start timed reminders script
+	"$NannyBotDir"/scripts/remindermanager &
+
+	#start notifcations loop
+	while true; do
+
+		while [ -f ~"$NannyBotDir"/is.quiet ]; do
+			echo "bot is quiet for now"
+			sleep 1
+		done
+
+		#get random wait time till next random message (20-40 minutes)
+		#start with randomness based on current nanosecond
+		RANDOM=$(date +%s%N | cut -b10-19)
+		#modulate to number between 0 and 20
+		waittime=$(echo $(( $RANDOM % 20 )))
+		#add 20
+		let waittime=waittime\+20;
+		echo "sleeping for $waittime minutes"
+		#convert from seconds to min
+		let waittime=waittime\*60;
+		#waittime is now between 20 and 40 minutes
+
+		#sleeping loop
+		for (( c=$waittime; c>=0; c-- )); do
+		#for (( c=5; c>0; c-- )); do
+			#check if condition is filled to break loop
+			if [[ -f "$NannyBotDir"/is.running ]]; then
+
+				echo "sleeptime is $c"
+				sleep 1
+			else
+				break;
+			fi
+		done
+
+		if [[ ! -f "$NannyBotDir"/is.running ]]; then
+			echo "is.running was killed! Exiting!"
 			break;
 		fi
-	done
+		#parse message pool to see what messages can be sent
+		whitelist=$(awk '$1 ~ /[0-9]/' "$NannyBotDir"/messages/noticespool)
 
-	if [[ ! -f "$NannyBotDir"/is.running ]]; then
-		echo "is.running was killed! Exiting!"
-		break;
-	fi
-	#parse message pool to see what messages can be sent
-	whitelist=$(awk '$1 ~ /[0-9]/' "$NannyBotDir"/messages/noticespool)
-
-	#get linecount of all lines that start with 0-9
-	file=$(awk '$1 ~ /[0-9]/' "$NannyBotDir"/messages/noticespool | wc -l)
-	a=$file
+		#get linecount of all lines that start with 0-9
+		file=$(awk '$1 ~ /[0-9]/' "$NannyBotDir"/messages/noticespool | wc -l)
+		a=$file
 
 
-	#get times from each line and process them
-	currTime=`date +%k%M`
-	currentline=$(echo 1)
-	while [ $a -gt 0 ]; do
-		#get time of line
-		currentlinetime=$(awk '$1 ~ /[0-9]/' "$NannyBotDir"/messages/noticespool | awk "NR==$currentline" | awk '{print $2}')
-		#if the time is "All" obviously don't remove it from pool
-		#echo "awked input is $currentlinetime"
-		if [ ! -z "$currentlinetime" ]; then
-			if [ $currentlinetime != "All" ]; then
-				m=$(echo $currentlinetime | sed 's/://g')
-				#echo "sedded input is $m"
+		#get times from each line and process them
+		currTime=`date +%k%M`
+		currentline=$(echo 1)
+		while [ $a -gt 0 ]; do
+			#get time of line
+			currentlinetime=$(awk '$1 ~ /[0-9]/' "$NannyBotDir"/messages/noticespool | awk "NR==$currentline" | awk '{print $2}')
+			#if the time is "All" obviously don't remove it from pool
+			#echo "awked input is $currentlinetime"
+			if [ ! -z "$currentlinetime" ]; then
+				if [ $currentlinetime != "All" ]; then
+					m=$(echo $currentlinetime | sed 's/://g')
+					#echo "sedded input is $m"
 
-				#seperate to different variables
-				Stime=$(echo $m | cut -f1 -d-)
-				Etime=$(echo $m | cut -f2 -d-)
+					#seperate to different variables
+					Stime=$(echo $m | cut -f1 -d-)
+					Etime=$(echo $m | cut -f2 -d-)
 
-				#make && a || if Stime is higher than Etime
+					#make && a || if Stime is higher than Etime
 
-				if [[ $currTime -gt $Stime && $currTime -lt $Etime ]]; then
-					echo "Time is between $Stime and $Etime! ($currTime)"
-					#allow this to exist
-				else
-					echo "Time is NOT between $Stime and $Etime! ($currTime) Removing line $a"
-					whitelist=$( echo $whitelist | sed  "${a}s/.*//" )
+					if [[ $currTime -gt $Stime && $currTime -lt $Etime ]]; then
+						echo "Time is between $Stime and $Etime! ($currTime)"
+						#allow this to exist
+					else
+						echo "Time is NOT between $Stime and $Etime! ($currTime) Removing line $a"
+						whitelist=$( echo $whitelist | sed  "${a}s/.*//" )
+					fi
 				fi
+			else
+				echo "jimmy is nul"
 			fi
+
+			let a-=1
+			let currentline+=1
+		done
+		#now remove all empty lines that we sedded out earlier
+		#we couldn't remove them before, because it would change the position of later lines in the loop
+		whitelist=$( echo $whitelist | sed '/^[[:space:]]*$/d' )
+
+		#if number of valid lines is zero, then don't run
+
+		#get total weight of file
+		totalweight=$( echo $whitelist | awk -F '|' '{sum += $1} END {print sum}' )
+		#have to start at 0 index
+		let totalweight=-1
+		#get randomness based on current nanosecond
+		RANDOM=$(date +%s%N | cut -b10-19)
+		#modulate weight to number between 0 and total weight
+		currentweight=$(echo $(( $RANDOM % $totalweight )))
+
+		echo "currentweight is $currentweight"
+
+		#see what line we end up on with randomly given weight
+		currentline=$(echo 1)
+		while [ $currentweight -ge 0 ]; do
+			#awk weight of each line
+			a=$( echo $whitelist | awk "NR==$currentline" "$NannyBotDir"/messages/noticespool | awk '{print $1}')
+			#subtract weighted number until random value goes to 0 or lower
+			echo "removing $a from currentweight, new weight is now $currentweight, and current line is $currentline"
+			let currentweight-=a
+			let currentline+=1
+		done
+
+		#parse $currentline from file
+		parsingstring=$( echo $whitelist | awk "NR==$currentline")
+		#grep out everything in quotes
+		msg=$(echo $parsingstring | grep -Po '\"\K[^\"]*')
+		#get icon to display
+		icon=$( echo $parsingstring | awk '{print $3}' )
+
+		if [ ! -z "$msg" ]; then
+			notify-send "$msg" --icon="$icondir/notify_$icon.png" -t 30000
 		else
-			echo "jimmy is nul"
+			notify-send "Ummmm, for some reason I couldn't queue this message for you
+
+	[Error 1 - NULL message]" --icon="$icondir/notify_dizzy.png" -t 30000
 		fi
-
-		let a-=1
-		let currentline+=1
-	done
-	#now remove all empty lines that we sedded out earlier
-	#we couldn't remove them before, because it would change the position of later lines in the loop
-	whitelist=$( echo $whitelist | sed '/^[[:space:]]*$/d' )
-
-	#if number of valid lines is zero, then don't run
-
-	#get total weight of file
-	totalweight=$( echo $whitelist | awk -F '|' '{sum += $1} END {print sum}' )
-	#have to start at 0 index
-	let totalweight=-1
-	#get randomness based on current nanosecond
-	RANDOM=$(date +%s%N | cut -b10-19)
-	#modulate weight to number between 0 and total weight
-	currentweight=$(echo $(( $RANDOM % $totalweight )))
-
-	echo "currentweight is $currentweight"
-
-	#see what line we end up on with randomly given weight
-	currentline=$(echo 1)
-	while [ $currentweight -ge 0 ]; do
-		#awk weight of each line
-		a=$( echo $whitelist | awk "NR==$currentline" "$NannyBotDir"/messages/noticespool | awk '{print $1}')
-		#subtract weighted number until random value goes to 0 or lower
-		echo "removing $a from currentweight, new weight is now $currentweight, and current line is $currentline"
-		let currentweight-=a
-		let currentline+=1
+		#repeat loop
+		echo "looping main bot message loop now"
 	done
 
-	#parse $currentline from file
-	parsingstring=$( echo $whitelist | awk "NR==$currentline")
-	#grep out everything in quotes
-	msg=$(echo $parsingstring | grep -Po '\"\K[^\"]*')
-	#get icon to display
-	icon=$( echo $parsingstring | awk '{print $3}' )
+	rm -f ~"$NannyBotDir"/is.running
 
-	if [ ! -z "$msg" ]; then
-		notify-send "$msg" --icon="$icondir/notify_$icon.png" -t 30000
-	else
-		notify-send "Ummmm, for some reason I couldn't queue this message for you
-
-[Error 1 - NULL message]" --icon="$icondir/notify_dizzy.png" -t 30000
-	fi
-	#repeat loop
-	echo "looping main bot message loop now"
-done
-
-rm -f ~"$NannyBotDir"/is.running
-
-#add deepfake voice to bot
-#allow scolding if not answering prompts
-#make responce (sometimes) for not answering enough of the prompts
+	#add deepfake voice to bot
+	#allow scolding if not answering prompts
+	#make responce (sometimes) for not answering enough of the prompts
+fi
