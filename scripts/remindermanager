@@ -52,46 +52,59 @@ while [[ -f "$NannyBotDir"/is.running ]]; do
 			if [ "$currentlinetime" != "boot" ]; then
 				#remove :
 				currentlinetime=$( echo $currentlinetime | sed 's/://g')
+				#remove space at beginning that 'date' adds if it is not a double digits hour
+				currentlinetime=$( echo "$currentlinetime" | awk '{$1=$1};1' )
 				echo "currentlinetime is $currentlinetime"
 
 				#subtract from current time to get wait time
 				currTime=`date +%k%M`
+				#remove space at beginning that 'date' adds if it is not a double digits hour
+				currTime=$( echo "$currTime" | awk '{$1=$1};1' )
+
 
 				if [ $currTime -le $currentlinetime ]; then
+
+					echo "it is $currTime, waiting until $currentlinetime"
 
 					#take upper two digits, and multiply by 40
 					#subtract by full value
 					#see if single or double digits for hours
 					if [ ${#currTime} -eq 3 ]; then
-						currHour=$(echo "${currTime:0}" )
+						currHour=$(echo ${currTime:0:1})
+						echo "curent time is single digits hour"
 					else
-						currHour=$(echo "${currTime:0:2}" )
+						currHour=$(echo ${currTime:0:2})
+						echo "curent time is double digits hour"
 					fi
+					echo "Current hour is $currHour:00"
 					let currHour\*=40
 					let currTime-=currHour
 
 
 					if [ ${#currentlinetime} -eq 3 ]; then
-						waitHour=$( echo "${currentlinetime:0}" )
+						waitHour=$(echo ${currentlinetime:0:1} )
+						echo "wait time is single digits hours"
 					else
-						waitHour=$( echo "${currentlinetime:0:2}" )
+						waitHour=$(echo ${currentlinetime:0:2} )
+						echo "wait time is double digits hours"
 					fi
+					echo "wait hour is $waitHour:00"
 					let waitHour\*=40
 					let currentlinetime-=waitHour
 
-
+					#math to difference in time
 					let waittime=currentlinetime\-currTime
 					echo "wait time for line $a is $waittime minutes"
 
-					#sleep loop goes here
 					#convert from seconds to min
 					let waittime=waittime\*60;
+
 					#sleeping loop
 					for (( c=$waittime; c>=0; c-- )); do
 						if [[ ! -f "$NannyBotDir"/is.running ]]; then
 							break;
 						fi
-						echo "sleeptime is $c"
+						echo "next reminder is in $c seconds"
 						sleep 1
 					done
 
