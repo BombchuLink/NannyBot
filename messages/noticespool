@@ -1,8 +1,6 @@
 10 All			default		"Test Message!"
-10 12:00-20:00	default		"It's currently between 10 and 8PM!"
-10 All			default		"Hey Did you know that you can drink lemon water to curb sugar cravings!"
-1 All			default		"Wow this is a rare message to see! It's a 1/71 chance!"
+10 All			assuring	"Another test message!"
+1 All			default		"Wow this is a rare message to see! It's a 1/61 chance!"
 10 All			default		"Be sure to give thanks for all that is around you! Taking joy in the little things helps everyone."
 10 All			assuring	"Hey since you use dmenu, and twms in general, How's your typing skills? Can you type numbers and special characters without looking? Maybe practice some if you have time."
-10 All			default		"Somebody once tolde me about quitting a task while you're ahead, and are still hungry for it. It can keep that drive for you to desire it inside you if you manage it well!"
 10 All			default		*P	mood

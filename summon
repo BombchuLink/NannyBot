@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 NannyBotDir=$HOME/.config/nannybot
 icondir=""$NannyBotDir"/icons"

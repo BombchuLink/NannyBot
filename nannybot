@@ -1,11 +1,13 @@
-#!/bin/bash
+#!/bin/zsh
 
 
 #get dir of this file
-CurrentDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+#bash way to get dir of file
+#CurrentDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+#zsh way to get dir of file
+CurrentDir=$0:A
 NannyBotDir="$HOME/.config/nannybot"
 icondir=""$NannyBotDir"/icons"
-touch -f "$NannyBotDir"/is.running
 
 #get current time/day
 date=$(date +%D)
@@ -17,16 +19,18 @@ hour=$(date +%H) # does 0-23
 
 
 # KNOWN BUGS
-# NannyBot will display the entire mesage log sometimes
-# also will run into not being able to display random messages sometimes
+# NannyBot will run into not being able to display random messages sometimes
 
 
 #force bot to be installed at ~/.config/nannybot. Running scripts from hotkeys doesn't preserve the directory the script is originally in, forcing my hand
-if [[ $CurrentDir != $NannyBotDir ]]; then
-	notify-send "Oops, it looks like I'm not installed to your home directory.
-Please install me to ~/.config/nannybot" --icon="$icondir/notify_default.png" -t 60000
+#also if getting from bash instead of zsh, have to remove the last /nannybot from this compare to $NannyBotDir
+if [[ $CurrentDir != $NannyBotDir/nannybot ]]; then
+	notify-send "Oops, it looks like I'm currently at $CurrentDir
+Please install me to $HOME/.config/nannybot" --icon="$icondir/notify_default.png" -t 60000
 
 else
+	#is running
+	touch -f "$NannyBotDir"/is.running
 	#run inital boot message if log file doesn't exist
 	if [[ ! -f "$NannyBotDir"/botlog ]]; then
 
@@ -68,19 +72,18 @@ If you haven't done so already, run the 'helpme' script in this folder, and plea
 		RANDOM=$(date +%s%N | cut -b10-19)
 		#modulate to number between 0 and 20
 		waittime=$(echo $(( $RANDOM % 20 )))
-		#add 20
-		let waittime=waittime\+20;
+		#number of minuts to wait
+		let waittime=waittime\+120;
 		echo "sleeping for $waittime minutes"
 		#convert from seconds to min
 		let waittime=waittime\*60;
-		#waittime is now between 20 and 40 minutes
 
 		#sleeping loop
-		for (( c=$waittime; c>=0; c-- )); do
-		#for (( c=5; c>0; c-- )); do
+		#for (( c=$waittime; c>=0; c-- )); do
+		for (( c=5; c>0; c-- )); do
 			#check if condition is filled to break loop
+			#check for exiting bot, and just breaking sleep loop
 			if [[ -f "$NannyBotDir"/is.running ]]; then
-
 				echo "sleeptime is $c"
 				sleep 1
 			else
@@ -137,13 +140,19 @@ If you haven't done so already, run the 'helpme' script in this folder, and plea
 		#now remove all empty lines that we sedded out earlier
 		#we couldn't remove them before, because it would change the position of later lines in the loop
 		whitelist=$( echo $whitelist | sed '/^[[:space:]]*$/d' )
+		#echo $whitelist
 
 		#if number of valid lines is zero, then don't run
 
 		#get total weight of file
-		totalweight=$( echo $whitelist | awk -F '|' '{sum += $1} END {print sum}' )
+		totalweight=$( echo $whitelist | awk '{sum+=$1} END {print sum}' )
+		echo "totalweight is $totalweight"
+		if [ $totalweight -eq 0 ]; then
+			notify-send "I'm sorry, but it looks like I don't have any tips in the notifcation pool right now." --icon="$icondir/notify_$icon.png" -t 30000
+			break
+		fi
 		#have to start at 0 index
-		let totalweight=-1
+		let totalweight-=1
 		#get randomness based on current nanosecond
 		RANDOM=$(date +%s%N | cut -b10-19)
 		#modulate weight to number between 0 and total weight
@@ -155,15 +164,17 @@ If you haven't done so already, run the 'helpme' script in this folder, and plea
 		currentline=$(echo 1)
 		while [ $currentweight -ge 0 ]; do
 			#awk weight of each line
-			a=$( echo $whitelist | awk "NR==$currentline" "$NannyBotDir"/messages/noticespool | awk '{print $1}')
+			a=$( echo $whitelist | sed "${currentline}q;d" | awk '{print $1}')
 			#subtract weighted number until random value goes to 0 or lower
-			echo "removing $a from currentweight, new weight is now $currentweight, and current line is $currentline"
 			let currentweight-=a
 			let currentline+=1
+			echo "removing $a from currentweight, new weight is now $currentweight, and current line is now line $currentline"
 		done
+		#convert from 1 index to 0
+		let currentline-=1
 
 		#parse $currentline from file
-		parsingstring=$( echo $whitelist | awk "NR==$currentline")
+		parsingstring=$( echo $whitelist | sed "${currentline}q;d" )
 		#grep out everything in quotes
 		msg=$(echo $parsingstring | grep -Po '\"\K[^\"]*')
 		#get icon to display
@@ -172,9 +183,14 @@ If you haven't done so already, run the 'helpme' script in this folder, and plea
 		if [ ! -z "$msg" ]; then
 			notify-send "$msg" --icon="$icondir/notify_$icon.png" -t 30000
 		else
-			notify-send "Ummmm, for some reason I couldn't queue this message for you
+			prompt=$( echo $parsingstring | awk '{print $5}' )
+			echo "prompt name is $prompt"
+			"$NannyBotDir"/prompts/"$prompt"_prompt_ask
 
-	[Error 1 - NULL message]" --icon="$icondir/notify_dizzy.png" -t 30000
+			#echo "ERROR MESSAGE"
+			#notify-send "Ummmm, for some reason I couldn't queue this message for you
+
+	#[Error 1 - NULL message]" --icon="$icondir/notify_dizzy.png" -t 30000
 		fi
 		#repeat loop
 		echo "looping main bot message loop now"
@@ -182,7 +198,7 @@ If you haven't done so already, run the 'helpme' script in this folder, and plea
 
 	rm -f ~"$NannyBotDir"/is.running
 
-	#add deepfake voice to bot
-	#allow scolding if not answering prompts
-	#make responce (sometimes) for not answering enough of the prompts
+	# TODO add deepfake voice to bot
+	# TODO allow scolding if not answering prompts?
+	# TODO make responce (sometimes) for not answering enough of the prompts
 fi
