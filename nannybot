@@ -1,29 +1,35 @@
 #!/bin/zsh
 
-
 #get dir of this file
-#bash way to get dir of file
-#CurrentDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-#zsh way to get dir of file
 CurrentDir=$0:A
 NannyBotDir="$HOME/.config/nannybot"
-icondir=""$NannyBotDir"/icons"
+
+# if ini file doesn't exist, generate a new one
+
+
+
+
+
+# parse config file
+UName=$( cat ""$NannyBotDir"/config.ini" | grep Uname | awk '{print $3}' )
+BName=$( cat ""$NannyBotDir"/config.ini" | grep Bname | awk '{print $3}' )
+Mtime=$( cat ""$NannyBotDir"/config.ini" | grep Mtime | awk '{print $3}' )
+Vtime=$( cat ""$NannyBotDir"/config.ini" | grep Vtime | awk '{print $3}' )
+
+icondir=""$NannyBotDir"/icons/$BName"
 
 #get current time/day
 date=$(date +%D)
 day=$(date +%A)
 hour=$(date +%H) # does 0-23
 
-# TODO add a config file for Name, what avatar to use, message pool timing
-# parse config file
 
+echo "Name is $UName"
 
 # KNOWN BUGS
-# NannyBot will run into not being able to display random messages sometimes
-
+# none
 
 #force bot to be installed at ~/.config/nannybot. Running scripts from hotkeys doesn't preserve the directory the script is originally in, forcing my hand
-#also if getting from bash instead of zsh, have to remove the last /nannybot from this compare to $NannyBotDir
 if [[ $CurrentDir != $NannyBotDir/nannybot ]]; then
 	notify-send "Oops, it looks like I'm currently at $CurrentDir
 Please install me to $HOME/.config/nannybot" --icon="$icondir/notify_default.png" -t 60000
@@ -50,9 +56,7 @@ If you haven't done so already, run the 'helpme' script in this folder, and plea
 			"$NannyBotDir"/scripts/greetingmsg
 		fi
 	fi
-
-
-	# TODO add check for other boot messages
+	# TODO add ability to check for other boot messages
 
 	# TODO start script that monitors files/day/active time/ect (shutdown monitoring goes here)
 
@@ -67,20 +71,20 @@ If you haven't done so already, run the 'helpme' script in this folder, and plea
 			sleep 1
 		done
 
-		#get random wait time till next random message (20-40 minutes)
+		#get random wait time till next random message (240-260 minutes)
 		#start with randomness based on current nanosecond
 		RANDOM=$(date +%s%N | cut -b10-19)
-		#modulate to number between 0 and 20
-		waittime=$(echo $(( $RANDOM % 20 )))
+		#modulate to number between 0 and max variable time
+		waittime=$(echo $(( $RANDOM % $Vtime )))
 		#number of minuts to wait
-		let waittime=waittime\+120;
+		let waittime=waittime\+$Mtime;
 		echo "sleeping for $waittime minutes"
 		#convert from seconds to min
 		let waittime=waittime\*60;
 
 		#sleeping loop
-		#for (( c=$waittime; c>=0; c-- )); do
-		for (( c=5; c>0; c-- )); do
+		for (( c=$waittime; c>=0; c-- )); do
+		#for (( c=5; c>0; c-- )); do
 			#check if condition is filled to break loop
 			#check for exiting bot, and just breaking sleep loop
 			if [[ -f "$NannyBotDir"/is.running ]]; then

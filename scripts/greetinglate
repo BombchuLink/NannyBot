@@ -1,7 +1,8 @@
 #!/bin/bash
 
 day=$(date +%A)
-icondir="$HOME/.config/nannybot/icons"
+BName=$( cat ""$NannyBotDir"/config.ini" | grep Bname | awk '{print $3}' )
+icondir="$HOME/.config/nannybot/icons/$BName"
 
 case "$day" in
 	Monday)

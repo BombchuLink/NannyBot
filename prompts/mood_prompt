@@ -1,7 +1,8 @@
 #!/bin/bash
 
 NannyBotDir="$HOME/.config/nannybot"
-icondir=""$NannyBotDir"/icons"
+BName=$( cat ""$NannyBotDir"/config.ini" | grep Bname | awk '{print $3}' )
+icondir=""$NannyBotDir"/icons/$BName"
 
 mood=$(echo -e "1 very good\n2 alright\n3 ready to work!\n4 tired\n5 sad\n6 angry" | dmenu -i -l 30)
 char="${mood:0:1}"

@@ -1,7 +1,9 @@
 #!/bin/zsh
 
+
 NannyBotDir=$HOME/.config/nannybot
-icondir=""$NannyBotDir"/icons"
+BName=$( cat ""$NannyBotDir"/config.ini" | grep Bname | awk '{print $3}' )
+icondir=""$NannyBotDir"/icons/$BName"
 echo "$NannyBotDir"
 
 

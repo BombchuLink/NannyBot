@@ -4,9 +4,13 @@
 #get dir
 NannyBotDir="$HOME/.config/nannybot"
 NannyBotDir=$( echo $NannyBotDir | sed 's/scripts\///' )
-icondir=""$NannyBotDir"/icons"
 
 #parse config file
+UName=$( cat ""$NannyBotDir"/config.ini" | grep Uname | awk '{print $3}' )
+BName=$( cat ""$NannyBotDir"/config.ini" | grep Bname | awk '{print $3}' )
+Mtime=$( cat ""$NannyBotDir"/config.ini" | grep Mtime | awk '{print $3}' )
+Vtime=$( cat ""$NannyBotDir"/config.ini" | grep Vtime | awk '{print $3}' )
+
 
 
 while [[ -f "$NannyBotDir"/is.running ]]; do
@@ -16,7 +20,7 @@ while [[ -f "$NannyBotDir"/is.running ]]; do
 	dxte="${date:0:6}XX"
 	day=$(date +%a)
 	hour=$(date +%H) # does 0-23
-	icondir=""$NannyBotDir"/icons"
+	icondir=""$NannyBotDir"/icons/$BName"
 
 	#---====load file and parse===----
 	#remove comments
@@ -136,13 +140,13 @@ while [[ -f "$NannyBotDir"/is.running ]]; do
 
 						case "${m}" in
 							0)
-								pmsg=$(echo "Andrew, I need to remind you")
+								pmsg=$(echo "$Uname, I need to remind you")
 								;;
 							1)
-								pmsg=$(echo "Andrew, Here's your reminder")
+								pmsg=$(echo "$Uname, Here's your reminder")
 								;;
 							2)
-								pmsg=$(echo "Hey Andrew, Don't forget")
+								pmsg=$(echo "Hey $Uname, Don't forget")
 								;;
 							*)
 						esac

@@ -1,5 +1,9 @@
 #!/bin/zsh
 
+NannyBotDir="$HOME/.config/nannybot"
+BName=$( cat ""$NannyBotDir"/config.ini" | grep Bname | awk '{print $3}' )
+icondir=""$NannyBotDir"/icons/$BName"
+
 icondir="/home/blink/.config/nannybot/icons"
 
 #check if prompt exists
@@ -12,7 +16,7 @@ else
 
 	case "${char}" in
 		1)
-		notify-send "Why I'm Nannybot! The name of this particular module you're running is called \"Betty\" Nice to meet you! " --icon="./icons/notify_default.png" -t 60000
+		notify-send "Why I'm Nannybot! The name of this particular module you're running is called \"Betty\" Nice to meet you! " --icon="$icondir/notify_default.png" -t 60000
 		;;
 		2)
 			notify-send "Either is perfectly fine, Betty is the face, nannybot is the underlying structure that makes me run. If you're wondering where my design comes from, I was drawn by wwwjam, and I'm based on a comic series called \"Emmy The Robot\", that's owned by the wonderful Domcell (That you should totally read by the way!)" --icon="$icondir/notify_default.png" -t 60000

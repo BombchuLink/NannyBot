@@ -1,6 +1,8 @@
 #!/bin/bash
 
-icondir="$HOME/.config/nannybot/icons"
+NannyBotDir="$HOME/.config/nannybot"
+BName=$( cat ""$NannyBotDir"/config.ini" | grep Bname | awk '{print $3}' )
+icondir=""$NannyBotDir"/icons/$BName"
 
 #copy prompt to home dir
 cp -f /home/blink/.config/nannybot/prompts/mood_prompt /home/blink/.config/nannybot/current_prompt
