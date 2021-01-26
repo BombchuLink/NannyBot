@@ -42,7 +42,7 @@ else
 
 		#write directory of bot to the summon script directly because when mapped to hotkey it's not possible for the script to know where it originally is when ran afaik
 		touch -f "$NannyBotDir"/botlog
-		notify-send "Hi there! I'm NannyBot v0.1! I'm here to help you organize your life and help you through thick and thin
+		notify-send "Hi there! I'm NannyBot v1.0! I'm here to help you organize your life and help you through thick and thin
 
 If you haven't done so already, run the 'helpme' script in this folder, and please check out the README.md for full documentation on how I can help you!" --icon="$icondir/notify_default.png" -t 60000
 	elif [[ -f "$NannyBotDir"/is.reboot ]]; then
