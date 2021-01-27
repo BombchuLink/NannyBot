@@ -4,12 +4,6 @@
 CurrentDir=$0:A
 NannyBotDir="$HOME/.config/nannybot"
 
-# if ini file doesn't exist, generate a new one
-
-
-
-
-
 # parse config file
 UName=$( cat ""$NannyBotDir"/config.ini" | grep Uname | awk '{print $3}' )
 BName=$( cat ""$NannyBotDir"/config.ini" | grep Bname | awk '{print $3}' )
@@ -42,7 +36,7 @@ else
 
 		#write directory of bot to the summon script directly because when mapped to hotkey it's not possible for the script to know where it originally is when ran afaik
 		touch -f "$NannyBotDir"/botlog
-		notify-send "Hi there! I'm NannyBot v1.0! I'm here to help you organize your life and help you through thick and thin
+		notify-send "Hi there! I'm NannyBot v0.1! I'm here to help you organize your life and help you through thick and thin
 
 If you haven't done so already, run the 'helpme' script in this folder, and please check out the README.md for full documentation on how I can help you!" --icon="$icondir/notify_default.png" -t 60000
 	elif [[ -f "$NannyBotDir"/is.reboot ]]; then
@@ -84,7 +78,11 @@ If you haven't done so already, run the 'helpme' script in this folder, and plea
 
 		#sleeping loop
 		for (( c=$waittime; c>=0; c-- )); do
-		#for (( c=5; c>0; c-- )); do
+			#break out if manually breaking
+			if [[ -f "$NannyBotDir"/notifynow ]]; then
+				break;
+			fi
+
 			#check if condition is filled to break loop
 			#check for exiting bot, and just breaking sleep loop
 			if [[ -f "$NannyBotDir"/is.running ]]; then
@@ -99,6 +97,7 @@ If you haven't done so already, run the 'helpme' script in this folder, and plea
 			echo "is.running was killed! Exiting!"
 			break;
 		fi
+		rm -f "$NannyBotDir"/notifynow
 		#parse message pool to see what messages can be sent
 		whitelist=$(awk '$1 ~ /[0-9]/' "$NannyBotDir"/messages/noticespool)
 

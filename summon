@@ -11,7 +11,7 @@ echo "$NannyBotDir"
 if [ -f "$NannyBotDir"/current_prompt ]; then
 	"$NannyBotDir"/current_prompt
 else
-	option=$(echo -e "1 Start Running please.\n2 Shut down please.\n3 Restart please." | dmenu -p "Nannybot here, how can I help?" -i -l 30)
+	option=$(echo -e "1 Start Please.\n2 Shut down please.\n3 Restart please.\n4 Give next notifcation" | dmenu -p "Nannybot here, how can I help?" -i -l 30)
 
 	char="${option:0:1}"
 
@@ -47,6 +47,9 @@ You'll always be able to access me in this menu though." --icon="$icondir/notify
 			fi
 			touch -f "$NannyBotDir"/is.running
 			"$NannyBotDir"/nannybot &
+		;;
+		4)
+			touch -f "$NannyBotDir"/notifynow
 		;;
 		*)
 		notify-send "I'm sorry sweetie, but I'm not equipped to handle that" --icon="$icondir/notify_thinking.png" -t 60000

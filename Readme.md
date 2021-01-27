@@ -1,23 +1,18 @@
 # NannyBot
 
-Nannybot is a task managing daemon, running on zsh, that passes messages to the user via notify-send (with cute waifu faces).
+Nannybot is a task managing daemon made using shell scripts, that passes messages to the user via notify-send (with cute waifu faces).
 
 ![bot](bot.png)
 
 The bot has only been tested using dunst, but should work with any notifcation daemon. For best results, it is suggested to have a notifcation system that allows icons to be displayed, and turned on.
+
+The bot is a project that I spent only 3 days on, and has had minimal testing, so please report bugs if you experience them.
 
 Also if you make your own modules, or characters, feel free to fork
 
 ## INSTALLATION
 
 Put the contents of this folder into ~/.config/nannybot
-
-## DEPENDENCIES
-
-dunst
-dmenu
-notify-send
-zsh
 
 ## STARTING
 
@@ -42,10 +37,16 @@ For a more in-depth look at how flexable the messages are, please look at the fi
 ## CREDITS
 
 Andrew "BLink/Bombchu Link" Prater:
+
 Program
 
 wwwjam:
+
 Betty's Portrait [https://www.deviantart.com/wwwjam/art/Top-of-The-Class-843588822]
 
 Dominic Cellini:
+
 Betty's Design [https://www.webtoons.com/en/challenge/emmy-the-robot/list?title_no=402201]
+
+Emacs:
+For having ORGMODE that will forever be better than this
