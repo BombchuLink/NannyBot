@@ -36,16 +36,13 @@ For a more in-depth look at how flexable the messages are, please look at the fi
 
 ## CREDITS
 
-Andrew "BLink/Bombchu Link" Prater:
-
+Andrew "BLink/Bombchu Link" Xavier:
 Program
 
 wwwjam:
-
 Betty's Portrait [https://www.deviantart.com/wwwjam/art/Top-of-The-Class-843588822]
 
 Dominic Cellini:
-
 Betty's Design [https://www.webtoons.com/en/challenge/emmy-the-robot/list?title_no=402201]
 
 Emacs:
