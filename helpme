@@ -4,7 +4,6 @@ NannyBotDir="$HOME/.config/nannybot"
 BName=$( cat ""$NannyBotDir"/config.ini" | grep Bname | awk '{print $3}' )
 icondir=""$NannyBotDir"/icons/$BName"
 
-icondir="/home/blink/.config/nannybot/icons"
 
 #check if prompt exists
 if [ -f ~/.config/nannybot/current_prompt ]; then
@@ -31,7 +30,7 @@ else
 		notify-send "Checkout the README.md for information on how my messaging system works!" --icon="$icondir/notify_assuring.png" -t 60000
 		;;
 		6)
-			if [ -f /home/blink/.config/nannybot/is.running ]; then
+			if [ -f "$NannyBotDir"/is.running ]; then
 				notify-send "Yes I am! But I'd suggest you got make some custom messages for me to send to you, if you haven't already! Go check out the README.md to get more info on how to do that." --icon="$icondir/notify_smug.png" -t 60000
 			else
 				notify-send "No I am not running right now, You can't start me without having some custom messages for me to send to you! Go check out the README.md to get more info on making some!" --icon="$icondir/notify_smug.png" -t 60000

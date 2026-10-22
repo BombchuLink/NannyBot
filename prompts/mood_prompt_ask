@@ -5,7 +5,7 @@ BName=$( cat ""$NannyBotDir"/config.ini" | grep Bname | awk '{print $3}' )
 icondir=""$NannyBotDir"/icons/$BName"
 
 #copy prompt to home dir
-cp -f /home/blink/.config/nannybot/prompts/mood_prompt /home/blink/.config/nannybot/current_prompt
+cp -f "$NannyBotDir"/prompts/mood_prompt "$NannyBotDir"/current_prompt
 
 notify-send "Hey there, How are you doing right now?
 
