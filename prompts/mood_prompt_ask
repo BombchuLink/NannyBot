@@ -1,12 +1,12 @@
 #!/bin/bash
 
-NannyBotDir="$HOME/.config/nannybot"
-BName=$( cat ""$NannyBotDir"/config.ini" | grep Bname | awk '{print $3}' )
-icondir=""$NannyBotDir"/icons/$BName"
+NannyBotDir=${NannyBotDir:-$(dirname "$(dirname "$(readlink -f "$0")")")}
+# shellcheck source=../lib.sh
+. "$NannyBotDir/lib.sh"
 
-#copy prompt to home dir
-cp -f "$NannyBotDir"/prompts/mood_prompt "$NannyBotDir"/current_prompt
+#point current_prompt at this prompt so summon runs it
+ln -sfn prompts/mood_prompt "$NannyBotDir/current_prompt"
 
-notify-send "Hey there, How are you doing right now?
+notify default "Hey there, How are you doing right now?
 
-(Answer with Mod+Alt+N)" --icon="$icondir/notify_default.png" -t 30000
+(Answer with Mod+Alt+N)"

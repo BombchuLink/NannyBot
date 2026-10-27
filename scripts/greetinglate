@@ -1,37 +1,37 @@
 #!/bin/bash
 
-day=$(date +%A)
-BName=$( cat ""$NannyBotDir"/config.ini" | grep Bname | awk '{print $3}' )
-icondir="$HOME/.config/nannybot/icons/$BName"
+NannyBotDir=${NannyBotDir:-$(dirname "$(dirname "$(readlink -f "$0")")")}
+# shellcheck source=../lib.sh
+. "$NannyBotDir/lib.sh"
 
-case "$day" in
+case "$(LC_ALL=C date +%A)" in
 	Monday)
-		notify-send "It's Monday, Please make sure to start the week off strong and healthy. Changing your sleeping scedual, and making it unstable is not good for your health" --icon="$icondir/notify_sad.png" -t 30000
+		notify sad "It's Monday, Please make sure to start the week off strong and healthy. Changing your sleeping scedual, and making it unstable is not good for your health"
 		;;
 	Tuesday)
-		notify-send "Morning Sleepy-head!
-Today is Tuesday! Make sure to go over what you have to do today before getting started!" --icon="$icondir/notify_default.png" -t 30000
+		notify default "Morning Sleepy-head!
+Today is Tuesday! Make sure to go over what you have to do today before getting started!"
 		;;
 	Wednesday)
-		notify-send "Hey Sleepyhead! It's time to wake up!" --icon="$icondir/notify_sad.png" -t 30000
+		notify sad "Hey Sleepyhead! It's time to wake up!"
 		;;
 	Thursday)
-		notify-send "Rise and shine! It's Thurday!
+		notify default "Rise and shine! It's Thurday!
 A late start is better than no start at all.
 
-If you need anything I'm just a keyboard shortcut away!" --icon="$icondir/notify_default.png" -t 30000
+If you need anything I'm just a keyboard shortcut away!"
 		;;
 	Friday)
-		notify-send "Good Morning!
+		notify smug "Good Morning!
 It's finally Friday! The final strech! Make sure to focus hard finishing the week strong!!
 
-As always, I'm just a keyboard shortcut away!" --icon="$icondir/notify_smug.png" -t 30000
+As always, I'm just a keyboard shortcut away!"
 		;;
 	Saturday)
-		notify-send "Good Morning! It's finally the weekend! I hope you had a good rest last night." --icon="$icondir/notify_default.png" -t 60000
+		notify default "Good Morning! It's finally the weekend! I hope you had a good rest last night." 60000
 		;;
 	Sunday)
-		notify-send "Good Morning!
-Today is Sunday! Make sure to check up on those around you that you love and care about! They are priceless, and without them you wouldn't be the person you are! Always cherish them." --icon="$icondir/notify_default.png" -t 60000
+		notify default "Good Morning!
+Today is Sunday! Make sure to check up on those around you that you love and care about! They are priceless, and without them you wouldn't be the person you are! Always cherish them." 60000
 		;;
 esac

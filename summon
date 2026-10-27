@@ -1,58 +1,86 @@
-#!/bin/zsh
+#!/bin/bash
 
+NannyBotDir=${NannyBotDir:-$(dirname "$(readlink -f "$0")")}
+# shellcheck source=lib.sh
+. "$NannyBotDir/lib.sh"
 
-NannyBotDir=$HOME/.config/nannybot
-BName=$( cat ""$NannyBotDir"/config.ini" | grep Bname | awk '{print $3}' )
-icondir=""$NannyBotDir"/icons/$BName"
-echo "$NannyBotDir"
+#use the systemd user service if it's installed, otherwise run detached and log to $state/log
+start_bot() {
+	if systemctl --user cat nannybot.service &>/dev/null; then
+		systemctl --user start nannybot.service
+	else
+		setsid -f "$NannyBotDir/nannybot" >>"$state/log" 2>&1 </dev/null
+	fi
+}
 
+stop_bot() {
+	local i=0
+	kill "$(<"$pidfile")" 2>/dev/null
+	while bot_running && (( i++ < 50 )); do
+		sleep 0.1
+	done
+}
 
 #check if prompt exists
-if [ -f "$NannyBotDir"/current_prompt ]; then
-	"$NannyBotDir"/current_prompt
-else
-	option=$(echo -e "1 Start Please.\n2 Shut down please.\n3 Restart please.\n4 Give next notifcation" | dmenu -p "Nannybot here, how can I help?" -i -l 30)
-
-	char="${option:0:1}"
-
-	case "${char}" in
-		1)
-			if [[ -f "$NannyBotDir"/is.running ]]; then
-				notify-send "I'm already up and at it!" --icon="$icondir/notify_default.png" -t 60000
-			else
-				notify-send "You got it! Starting now..." --icon="$icondir/notify_default.png" -t 60000
-				touch -f "$NannyBotDir"/is.running
-				"$NannyBotDir"/nannybot &
-			fi
-		;;
-		2)
-			if [[ ! -f "$NannyBotDir"/is.running ]]; then
-				notify-send "I'm already not running right now.
-
-You'll always be able to access me in this menu though." --icon="$icondir/notify_thinking.png" -t 60000
-			else
-				notify-send "Alright. Bye now!" --icon="$icondir/notify_default.png" -t 60000
-				rm -f "$NannyBotDir"/is.running
-			fi
-		;;
-		3)
-			if [[ ! -f "$NannyBotDir"/is.running ]]; then
-				notify-send "I'm already not running right now, but let me start up for you!" --icon="$icondir/notify_default.png" -t 60000
-			else
-				rm -f "$NannyBotDir"/is.running
-				touch -f "$NannyBotDir"/is.reboot
-				notify-send "Restarting..." --icon="$icondir/notify_default.png" -t 60000
-				#sleep 2 is to have enough restart time to let all sub-scripts kill themselves
-				sleep 2
-			fi
-			touch -f "$NannyBotDir"/is.running
-			"$NannyBotDir"/nannybot &
-		;;
-		4)
-			touch -f "$NannyBotDir"/notifynow
-		;;
-		*)
-		notify-send "I'm sorry sweetie, but I'm not equipped to handle that" --icon="$icondir/notify_thinking.png" -t 60000
-		;;
-	esac
+if [[ -f $NannyBotDir/current_prompt ]]; then
+	"$NannyBotDir/current_prompt"
+	exit
 fi
+
+if [[ -f $state/quiet ]]; then
+	quiet_option="5 You can talk again."
+else
+	quiet_option="5 Be quiet for a while please."
+fi
+
+option=$(printf '%s\n' "1 Start Please." "2 Shut down please." "3 Restart please." "4 Give next notifcation" "$quiet_option" | menu "Nannybot here, how can I help?")
+
+case "${option:0:1}" in
+	1)
+		if bot_running; then
+			notify default "I'm already up and at it!" 60000
+		else
+			notify default "You got it! Starting now..." 60000
+			start_bot
+		fi
+		;;
+	2)
+		if ! bot_running; then
+			notify thinking "I'm already not running right now.
+
+You'll always be able to access me in this menu though." 60000
+		else
+			notify default "Alright. Bye now!" 60000
+			stop_bot
+		fi
+		;;
+	3)
+		if ! bot_running; then
+			notify default "I'm already not running right now, but let me start up for you!" 60000
+		else
+			notify default "Restarting..." 60000
+			stop_bot
+			touch "$state/reboot"
+		fi
+		start_bot
+		;;
+	4)
+		if bot_running; then
+			kill -USR1 "$(<"$pidfile")"
+		else
+			notify thinking "I can't give you a notification while I'm not running, silly!" 60000
+		fi
+		;;
+	5)
+		if [[ -f $state/quiet ]]; then
+			rm -f "$state/quiet"
+			notify assuring "Yay! I'll keep the tips coming then." 60000
+		else
+			touch "$state/quiet"
+			notify sad "Okay, I'll keep my tips to myself. I'll still give you your reminders though!" 60000
+		fi
+		;;
+	*)
+		notify thinking "I'm sorry sweetie, but I'm not equipped to handle that" 60000
+		;;
+esac

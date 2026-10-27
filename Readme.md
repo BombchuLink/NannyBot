@@ -12,11 +12,22 @@ Also if you make your own modules, or characters, feel free to fork
 
 ## INSTALLATION
 
-Put the contents of this folder into ~/.config/nannybot
+Put the contents of this folder into ~/.config/nannybot (or anywhere else, the scripts find their own folder). Requires bash, notify-send and dmenu.
+
+To use a different menu than dmenu, set ``NANNYBOT_MENU``, e.g. ``export NANNYBOT_MENU="rofi -dmenu -i"``
 
 ## STARTING
 
-In order to properly use NannyBot, it's highly suggested to map the script ``summon`` to a keyboard shortcut, and activate the bot that way. This script has options such as starting and stopping the bot and properly starts/stops all sub-scripts.
+In order to properly use NannyBot, it's highly suggested to map the script ``summon`` to a keyboard shortcut, and activate the bot that way. This script has options such as starting, stopping, restarting the bot, showing the next notification right away, and keeping the bot quiet (no random tips, reminders still come through).
+
+To start NannyBot on login, either run ``nannybot`` from your startup programs, or install the systemd user service:
+
+```
+cp nannybot.service ~/.config/systemd/user/
+systemctl --user enable --now nannybot
+```
+
+(edit ``ExecStart`` in the service if NannyBot isn't in ~/.config/nannybot). If notifications don't show up from the service, add ``systemctl --user import-environment DISPLAY WAYLAND_DISPLAY`` to your window manager's startup. When the service is installed, ``summon`` starts the bot through it, and logs go to ``journalctl --user -u nannybot``. Otherwise logs go to ``$XDG_RUNTIME_DIR/nannybot/log``.
 
 ## USING NANNYBOT
 
@@ -30,7 +41,9 @@ Reminders are messages that are sent as specific times, to remind you of things.
 
 Notices are messages that are radomly picked from, and the likelyness of each individual message can be changed. Message display rate is handled by a weighted random system that functions like a lottery, the higher the number, the more "tickets" there are, and the more likely the message is to "win" (be shown)
 
-Prompts are a subset of Notices and Reminders that display a message, but also inquire a responce from the user, and can run commands based on the answer given by the user. To answer the question the user must run the script ``summon`` in the home folder of the program. The summon script forwards you to the ``current_prompt`` script if it exists, saving you a keybind. (It is highly suggest to bind this to a hotkey, or auto-run the script) Dmenu is required, and I'm not familiar enough with non-twm style shell related programs that accept user input. Reguardless, if you know enough about using these systems, it should be very easy to port these scripts to other user-input programs.
+Reminders are checked every minute, so edits to the file are picked up right away. If your computer was asleep when a reminder was due, it's sent when it wakes up.
+
+Prompts are a subset of Notices and Reminders that display a message, but also inquire a responce from the user, and can run commands based on the answer given by the user. To answer the question the user must run the script ``summon`` in the home folder of the program. The summon script forwards you to the ``current_prompt`` script if it exists, saving you a keybind. (It is highly suggest to bind this to a hotkey, or auto-run the script) Dmenu is used by default, but any dmenu-style menu (rofi, wofi, fuzzel...) works by setting ``NANNYBOT_MENU``.
 
 For a more in-depth look at how flexable the messages are, please look at the files the messages are stored in, as they contain all the syntax to add your own messages.
 

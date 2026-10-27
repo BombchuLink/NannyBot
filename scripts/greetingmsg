@@ -1,45 +1,42 @@
 #!/bin/bash
 
-day=$(date +%A)
-NannyBotDir="$HOME/.config/nannybot"
-BName=$( cat ""$NannyBotDir"/config.ini" | grep Bname | awk '{print $3}' )
-icondir="$HOME/.config/nannybot/icons/$BName"
+NannyBotDir=${NannyBotDir:-$(dirname "$(dirname "$(readlink -f "$0")")")}
+# shellcheck source=../lib.sh
+. "$NannyBotDir/lib.sh"
 
-case "$day" in
+case "$(LC_ALL=C date +%A)" in
 	Monday)
-		notify-send "Good Morning! Today is Monday, be sure to start the week off strong!" --icon="$icondir/notify_default.png" -t 30000
+		notify default "Good Morning! Today is Monday, be sure to start the week off strong!"
 		;;
 	Tuesday)
-		notify-send "Good Morning! Today is Tuesday! Make sure to eat a good breakfast before starting your day!" --icon="$icondir/notify_default.png" -t 30000
+		notify default "Good Morning! Today is Tuesday! Make sure to eat a good breakfast before starting your day!"
 		;;
 	Wednesday)
-		notify-send "Hello! Today is Wednesday \"my dude\"!
+		notify default "Hello! Today is Wednesday \"my dude\"!
 
-If you need anything I'm just a keyboard shortcut away!" --icon="$icondir/notify_default.png" -t 30000
+If you need anything I'm just a keyboard shortcut away!"
 		;;
 	Thursday)
-		notify-send "Rise and shine! It's Thurday!
+		notify default "Rise and shine! It's Thurday!
 Be sure to run through your to-do list carefully so you know what is what! The weekend is just around the corner after all!
 
-If you need anything I'm just a keyboard shortcut away!" --icon="$icondir/notify_default.png" -t 30000
+If you need anything I'm just a keyboard shortcut away!"
 		;;
 	Friday)
-		notify-send "Top of the morning!
+		notify smug "Top of the morning!
 It's finally Friday! The final strech! Make sure to focus hard on what you have left to do this week!
 
-As always, I'm just a keyboard shortcut away!" --icon="$icondir/notify_smug.png" -t 30000
+As always, I'm just a keyboard shortcut away!"
 		;;
 	Saturday)
-		notify-send "Good Morning! You made it to the weekend!
+		notify assuring "Good Morning! You made it to the weekend!
 
-As always, I'm just a keyboard shortcut away!" --icon="$icondir/notify_assuring.png" -t 60000
+As always, I'm just a keyboard shortcut away!" 60000
 		;;
 	Sunday)
-		notify-send "Good Morning!
+		notify default "Good Morning!
 Today is Sunday! It's a free day to do as you wish. Make sure to check up on those around you that you love and care about! They are priceless, and without them you wouldn't be the person you are! Always cherish them.
 
-As always, I'm just a keyboard shortcut away!" --icon="$icondir/notify_default.png" -t 60000
+As always, I'm just a keyboard shortcut away!" 60000
 		;;
 esac
-
-

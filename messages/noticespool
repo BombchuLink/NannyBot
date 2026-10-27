@@ -1,3 +1,10 @@
+#These are random tips nannybot sends every Mtime (+ up to Vtime) minutes;
+#format: Weight Window icon string
+#Weight: number of "tickets" this message gets in the lottery, higher is more likely
+#Window: All, or a time range like 9:00-17:00 (can wrap past midnight, e.g. 22:00-2:00)
+#icon: check nannybot/icons for list of all images
+#string: "message in quotes" (%Name is replaced with your name), or *P name to ask prompts/name_prompt_ask
+
 10 All			default		"Test Message!"
 10 All			default		"Hey Did you know that you can drink lemon water to curb sugar cravings!"
 1 All			default		"Wow this is a rare message to see! It's a 1/61 chance!"

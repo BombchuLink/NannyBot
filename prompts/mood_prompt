@@ -1,41 +1,36 @@
 #!/bin/bash
 
-NannyBotDir="$HOME/.config/nannybot"
-BName=$( cat ""$NannyBotDir"/config.ini" | grep Bname | awk '{print $3}' )
-icondir=""$NannyBotDir"/icons/$BName"
+#runs through the current_prompt symlink, readlink -f resolves it back to prompts/
+NannyBotDir=${NannyBotDir:-$(dirname "$(dirname "$(readlink -f "$0")")")}
+# shellcheck source=../lib.sh
+. "$NannyBotDir/lib.sh"
 
-mood=$(echo -e "1 very good\n2 alright\n3 ready to work!\n4 tired\n5 sad\n6 angry" | dmenu -i -l 30)
-char="${mood:0:1}"
+mood=$(printf '%s\n' "1 very good" "2 alright" "3 ready to work!" "4 tired" "5 sad" "6 angry" | menu)
 
-case "${char}" in
+case "${mood:0:1}" in
 	1)
-		notify-send "Glad to hear!" --icon="$icondir/notify_default.png" -t 30000
+		notify default "Glad to hear!"
 		;;
 	2)
-		notify-send "Well, if you need anything, I'm right here love." --icon="$icondir/notify_assuring.png" -t 30000
+		notify assuring "Well, if you need anything, I'm right here love."
 		;;
 	3)
-		notify-send "That's my boy." --icon="$icondir/notify_assuring.png" -t 30000
+		notify assuring "That's my boy."
 		;;
 	4)
-		notify-send "Most adults are suggested to get between 6 and 8 hours a night. If you're getting more or less it can be difficult to function." --icon="$icondir/notify_thinking.png" -t 30000
+		notify thinking "Most adults are suggested to get between 6 and 8 hours a night. If you're getting more or less it can be difficult to function."
 		;;
 	5)
-		notify-send "I wish I could do something more for you." --icon="$icondir/notify_sad.png" -t 30000
+		notify sad "I wish I could do something more for you."
 		;;
 	6)
-		notify-send "Just take a deep breath and talk it out, that might help some." --icon="$icondir/notify_sad.png" -t 30000
+		notify sad "Just take a deep breath and talk it out, that might help some."
 		;;
 	*)
-		dontyeet=true
-		notify-send "I'm sorry, can you say that again?" --icon="$icondir/notify_default.png" -t 30000
+		notify default "I'm sorry, can you say that again?"
+		#did not answer prompt correctly, keep current_prompt
+		exit
 		;;
 esac
 
-if [ $dontyeet ]; then
-	echo "did not answer prompt correctly, keeping file"
-else
-	rm -f "$NannyBotDir"/current_prompt
-fi
-
-
+rm -f "$NannyBotDir/current_prompt"

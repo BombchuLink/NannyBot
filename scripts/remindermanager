@@ -1,191 +1,73 @@
-#!/bin/zsh
-# WARNING bash removes the newline character when you do var=$() so this script uses zsh
+#!/bin/bash
 
-#get dir
-NannyBotDir="$HOME/.config/nannybot"
-NannyBotDir=$( echo $NannyBotDir | sed 's/scripts\///' )
+NannyBotDir=${NannyBotDir:-$(dirname "$(dirname "$(readlink -f "$0")")")}
+# shellcheck source=../lib.sh
+. "$NannyBotDir/lib.sh"
 
-#parse config file
-UName=$( cat ""$NannyBotDir"/config.ini" | grep Uname | awk '{print $3}' )
-BName=$( cat ""$NannyBotDir"/config.ini" | grep Bname | awk '{print $3}' )
-Mtime=$( cat ""$NannyBotDir"/config.ini" | grep Mtime | awk '{print $3}' )
-Vtime=$( cat ""$NannyBotDir"/config.ini" | grep Vtime | awk '{print $3}' )
+reminders="$NannyBotDir/messages/reminders"
+trap 'kill "$_nap" 2>/dev/null; exit 0' TERM INT
 
+#print "minute<TAB>line" for every reminder that applies today (boot reminders get minute -1)
+#Day can be All, a day (Mon), a range (Mon-Fri), or a date (2/25/21, 02/25/21, 2/25/XX)
+today_reminders() {
+	local dname wday mon mday year
+	read -r dname wday mon mday year <<<"$(LC_ALL=C date '+%a %w %m %d %y')"
+	awk -v dname="$dname" -v wday="$wday" -v mon="$mon" -v mday="$mday" -v year="$year" '
+		BEGIN { split("Sun Mon Tue Wed Thu Fri Sat", names, " "); for (i in names) idx[names[i]] = i - 1 }
+		function mins(s, t) { split(s, t, ":"); return t[1] * 60 + t[2] }
+		function day_ok(d, t, a, b) {
+			if (d == "All" || d == dname) return 1
+			if (d ~ /\//) {
+				split(d, t, "/")
+				return t[1] + 0 == mon + 0 && t[2] + 0 == mday + 0 && (t[3] == "XX" || t[3] % 100 == year + 0)
+			}
+			if (split(d, t, "-") == 2 && (t[1] in idx) && (t[2] in idx)) {
+				a = idx[t[1]]; b = idx[t[2]]
+				return a <= b ? (wday >= a && wday <= b) : (wday >= a || wday <= b)
+			}
+			return 0
+		}
+		/^[[:space:]]*#/ || NF < 4 { next }
+		day_ok($2) { print ($3 == "boot" ? -1 : mins($3)) "\t" $0 }
+	' "$reminders"
+}
 
+fire() {
+	local line=$1 type icon rest n
+	local -a intros=("$UName, I need to remind you" "$UName, Here's your reminder" "Hey $UName, Don't forget")
+	read -r type _ _ icon rest <<<"$line"
+	deliver "$icon" "$rest" "${intros[RANDOM % ${#intros[@]}]}"
 
-while [[ -f "$NannyBotDir"/is.running ]]; do
-
-	#start bot, get vars
-	date=$(date +%D)
-	dxte="${date:0:6}XX"
-	day=$(date +%a)
-	hour=$(date +%H) # does 0-23
-	icondir=""$NannyBotDir"/icons/$BName"
-
-	#---====load file and parse===----
-	#remove comments
-	queuelist=$(grep -v "#" $NannyBotDir"/messages/reminders")
-	#remove blank lines
-	queuelist=$( echo $queuelist | sed '/^[[:space:]]*$/d' )
-	echo "---===queue sort info===---
-	$day
-	$date
-	$dxte"
-	#keep 'all days', 'current day', and 'current date' values
-	queuelist=$(echo $queuelist | grep "$day\|All\|$date\|$dxte" )
-	#sort files by third column
-	queuelist=$( echo $queuelist | sort -t ' ' -k 3n )
-	#echo "---===queue list===---
-#$queuelist"
-
-	linecount=$( echo $queuelist | wc -l )
-	echo "we have $linecount task(s) today"
-	#increase by 1 because of index 1 things, and how line 0 is 1 so we need 2 for 1 task, ect
-	let linecount+=1
-
-	if [ $linecount -eq 0 ]; then
-		echo "no set tasks for today!"
-	else
-		#loop goes here
-		for (( a=1; a<linecount; a++ )); do
-
-			#get line
-			currentline=$( echo $queuelist | sed "${a}q;d" )
-			currentlinetime=$( echo $currentline | awk '{print $3}')
-
-			if [ "$currentlinetime" != "boot" ]; then
-				#remove :
-				currentlinetime=$( echo $currentlinetime | sed 's/://g')
-				#remove space at beginning that 'date' adds if it is not a double digits hour
-				currentlinetime=$( echo "$currentlinetime" | awk '{$1=$1};1' )
-				echo "currentlinetime is $currentlinetime"
-
-				#subtract from current time to get wait time
-				currTime=`date +%k%M`
-				#remove space at beginning that 'date' adds if it is not a double digits hour
-				currTime=$( echo "$currTime" | awk '{$1=$1};1' )
-
-
-				if [ $currTime -le $currentlinetime ]; then
-
-					echo "it is $currTime, waiting until $currentlinetime"
-
-					#take upper two digits, and multiply by 40
-					#subtract by full value
-					#see if single or double digits for hours
-					if [ ${#currTime} -eq 3 ]; then
-						currHour=$(echo ${currTime:0:1})
-						echo "curent time is single digits hour"
-					else
-						currHour=$(echo ${currTime:0:2})
-						echo "curent time is double digits hour"
-					fi
-					echo "Current hour is $currHour:00"
-					let currHour\*=40
-					let currTime-=currHour
-
-
-					if [ ${#currentlinetime} -eq 3 ]; then
-						waitHour=$(echo ${currentlinetime:0:1} )
-						echo "wait time is single digits hours"
-					else
-						waitHour=$(echo ${currentlinetime:0:2} )
-						echo "wait time is double digits hours"
-					fi
-					echo "wait hour is $waitHour:00"
-					let waitHour\*=40
-					let currentlinetime-=waitHour
-
-					#math to difference in time
-					let waittime=currentlinetime\-currTime
-					echo "wait time for line $a is $waittime minutes"
-
-					#convert from seconds to min
-					let waittime=waittime\*60;
-
-					#sleeping loop
-					for (( c=$waittime; c>=0; c-- )); do
-						if [[ ! -f "$NannyBotDir"/is.running ]]; then
-							break;
-						fi
-						echo "next reminder is in $c seconds"
-						sleep 1
-					done
-
-					if [[ ! -f "$NannyBotDir"/is.running ]]; then
-						break;
-					fi
-
-					#grep out everything in quotes
-					msg=$(echo $currentline | grep -Po '\"\K[^\"]*')
-
-					# check if msg is empty, and run prompt stuff instead if it is
-
-					if [ -z "$msg" ]; then
-
-						prompt=$( echo $currentline | awk '{print $6}' )
-						echo "prompt name is $prompt"
-						"$NannyBotDir"/prompts/"$prompt"_prompt_ask
-
-						#notify-send "Ummmm, for some reason I couldn't queue this message for you" --icon="$icondir/notify_dizzy.png" -t 30000
-
-					else
-						#get icon to display
-						icon=$( echo $currentline | awk '{print $4}' )
-
-
-						#get random pre-message
-						RANDOM=$(date +%s%N | cut -b10-19)
-						m=$(echo $(( $RANDOM % 2 )))
-
-						case "${m}" in
-							0)
-								pmsg=$(echo "$Uname, I need to remind you")
-								;;
-							1)
-								pmsg=$(echo "$Uname, Here's your reminder")
-								;;
-							2)
-								pmsg=$(echo "Hey $Uname, Don't forget")
-								;;
-							*)
-						esac
-						#send message
-						notify-send "$pmsg $msg" --icon="$icondir/notify_$icon.png" -t 30000
-						# TODO remove message if Temp
-
-						# get line of message that has Temp, Current day, and $msg
-						#get line of msg
-
-						TimeNow=`date +%k:%M`
-						awk "/$msg|$day|Temp/{print NR; exit }" $NannyBotDir"/messages/reminders"
-						LineToDel=$(awk "/^Temp $day $TimeNow.*$msg /{print NR }" $NannyBotDir"/messages/reminders" )
-						echo "Attempting to see if displayed message is a temp message"
-						if [ $LineToDel ]; then
-							sed '$LineToDeld' $NannyBotDir"/messages/reminders"
-							echo "Attempting to see if displayed message is a temp message"
-						fi
-					fi
-				else
-					echo "it is past $currentlinetime"
-				fi
-			else
-				echo "found a message that runs on boot!"
-			fi
-		done
+	#remove message if Temp
+	if [[ $type == Temp ]]; then
+		n=$(grep -nxF -m1 -- "$line" "$reminders" | cut -d: -f1)
+		[[ -n $n ]] && sed -i "${n}d" "$reminders"
 	fi
-	#make while loop here making it stuck until tomorrow
-	currentday=$( date +%a)
-	while [[ "$currentday" == "$day" ]]; do
-		if [[ ! -f "$NannyBotDir"/is.running ]]; then
-			break;
+}
+
+#on start, skip anything earlier today; after midnight, start from 00:00
+#if the computer was asleep, reminders missed since the last check are sent on wake
+today=$(date +%F)
+cursor=$(minute_of_day)
+boot_at=$(( $(date +%s) + 120 ))
+boot_done=0
+
+while true; do
+	if [[ $(date +%F) != "$today" ]]; then
+		today=$(date +%F)
+		cursor=0
+	fi
+	now=$(minute_of_day)
+	boot_due=$(( ! boot_done && $(date +%s) >= boot_at ))
+
+	while IFS=$'\t' read -r min line; do
+		if (( min < 0 ? boot_due : (min >= cursor && min <= now) )); then
+			fire "$line" </dev/null
 		fi
-		currentday=$( date +%a)
-		echo "waiting until $day is over"
-		sleep 1
-	done
-	if [[ ! -f "$NannyBotDir"/is.running ]]; then
-		echo "is.running was killed! Exiting remindermanager!"
-		break;
-	fi
+	done < <(today_reminders)
+
+	(( boot_due )) && boot_done=1
+	cursor=$(( now + 1 ))
+	#wake at the top of the next minute
+	nap $(( 60 - 10#$(date +%S) ))
 done

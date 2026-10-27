@@ -1,10 +1,11 @@
 #These are for nannybot to remind you of things at certian times;
 #format: Type Day/Date Time icon string
 #Type: Temp (Temporary) Perm (Permanent) Nannybot will delete the message if it's set to Temp
-#Day: Mon-Fri or All are acceptable days. using the date 2/25/21 is also acceptable (use XX in-place of the year for annual reminders)
-#Time: Insert time, can put "boot" and nannybot will remind you 2 minutes after next boot on previously said day.
+#Day: All, a single day (Mon), or a range of days (Mon-Fri). using the date 2/25/21 is also acceptable (use XX in-place of the year for annual reminders)
+#Time: Insert time in 24 hour format (17:30), can put "boot" and nannybot will remind you 2 minutes after next boot on previously said day.
 #icon: check nannybot/icons for list of all images
-#string: all messages are proceeded by the following unless the first character is $ in the string
+#string: "message in quotes", or *P name to ask prompts/name_prompt_ask
+#all messages are proceeded by one of the following unless the first character is $ in the string (%Name in a message is replaced with your name)
 #"%Name, I need to remind you"
 #"%Name, Here's your reminder"
 #Hey %Name, Don't forget"

@@ -1,0 +1,12 @@
+# systemd user service for NannyBot
+# install: cp nannybot.service ~/.config/systemd/user/ && systemctl --user enable --now nannybot
+# edit ExecStart if NannyBot isn't installed at ~/.config/nannybot
+[Unit]
+Description=NannyBot task managing daemon
+
+[Service]
+ExecStart=%h/.config/nannybot/nannybot
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
